@@ -1,0 +1,17 @@
+logs/
+target/
+lucene/
+classifier/
+results/
+sites/
+bin/
+*.jar
+*.class
+*.prefs
+.cache
+.DS_Store
+.svn
+.gwt/
+.metadata/
+*.classpath
+*.prefs
