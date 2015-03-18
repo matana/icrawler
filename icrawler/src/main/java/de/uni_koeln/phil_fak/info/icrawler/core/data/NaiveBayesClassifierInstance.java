@@ -19,15 +19,18 @@ public class NaiveBayesClassifierInstance implements Serializable {
 
 	private Classifier classifier;
 	private Instances trainingSet;
+	private Instances testSet;
 	private TreeSet<Integer> docVector;
 	private TreeSet<String> termVector;
 	private HashMap<Integer, Map<String, Double>> docTermMatrix;
 	private ArrayList<Attribute> listWekaAttributes;
+	
 
 	public NaiveBayesClassifierInstance(Classifier classifier, Instances trainingSet, 
-			TreeSet<Integer> docVector, TreeSet<String> termVector, HashMap<Integer, 
+			Instances testSet, TreeSet<Integer> docVector, TreeSet<String> termVector, HashMap<Integer, 
 			Map<String, Double>> docTermMatrix, ArrayList<Attribute> listWekaAttributes) {
 		this.setTrainingSet(trainingSet);
+		this.setTestSet(testSet);
 		this.setClassifier(classifier);
 		this.setDocVector(docVector);
 		this.setTermVector(termVector);
@@ -81,6 +84,14 @@ public class NaiveBayesClassifierInstance implements Serializable {
 
 	public void setListWekaAttributes(ArrayList<Attribute> listWekaAttributes) {
 		this.listWekaAttributes = listWekaAttributes;
+	}
+
+	public Instances getTestSet() {
+		return testSet;
+	}
+
+	public void setTestSet(Instances testSet) {
+		this.testSet = testSet;
 	}
 
 }
