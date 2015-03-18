@@ -1,11 +1,14 @@
 package de.uni_koeln.phil_fak.info.icrawler.util;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -126,6 +129,24 @@ public class ObjectReader {
 		}
 		
 		return files.get(0);
+	}
+	
+	public static List<String> getStopWords() {
+		List<String> list = new ArrayList<String>();
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(new File("stopwords.txt")));
+			String line = null;
+			while((line = br.readLine()) != null) {
+				list.add(line);
+			}
+			br.close();
+			return list;
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 }
