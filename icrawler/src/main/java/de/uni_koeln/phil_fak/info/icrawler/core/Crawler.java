@@ -17,17 +17,18 @@ import org.slf4j.LoggerFactory;
 import de.uni_koeln.phil_fak.info.icrawler.core.data.WebDocument;
 import de.uni_koeln.phil_fak.info.icrawler.lucene.LuceneIndexGenerator;
 import de.uni_koeln.phil_fak.info.icrawler.lucene.LuceneIndexManager;
+import de.uni_koeln.phil_fak.info.icrawler.util.ObjectReader;
 import de.uni_koeln.phil_fak.info.icrawler.util.ObjectWriter;
 
 public class Crawler {
 
 	private static Logger LOGGER = LoggerFactory.getLogger(Crawler.class);
 
-	public static Set<WebDocument> crawl(List<String> seed, int depth, DocumentType type) {
+	public static Set<WebDocument> crawl(List<String> seed, int depth, DocumentType type, boolean b) {
 
 		long start = System.currentTimeMillis();
 		
-		//Set<WebDocument> readResultsFor = DocumentReader.readResultsFor("spiegel");
+		Set<WebDocument> readResultsFor = ObjectReader.readResultsFor("spiegel");
 
 		Set<WebDocument> result = Collections.synchronizedSet(new HashSet<WebDocument>());
 
@@ -59,28 +60,29 @@ public class Crawler {
 		long took = System.currentTimeMillis() - start;
 		LOGGER.info(String.format("Crawling %s documents took %s ms. (~%s s.)", result.size(), took, took / 1000));
 		
+		if(b) {
+			writeToDocument(result, readResultsFor);
+			LuceneIndexManager manager = LuceneIndexManager.getInstance();
+			Set<WebDocument> indexable = new HashSet<WebDocument>();
+			for (WebDocument webDocument : result) {
+				if(manager.findByUrl(webDocument.getUrl()) < 0) {
+					LOGGER.info("document is indexable :: " + webDocument.getUrl());
+					indexable.add(webDocument);
+				}
+			}
+			if(indexable.size() > 0) {
+				LuceneIndexGenerator indexer = LuceneIndexGenerator.getInstance();
+				try {
+					LOGGER.info(indexable.size() + " documents to be indexed...");
+					indexer.index(result, null);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			} else {
+				LOGGER.info("Nothing to index...");
+			}
+		}
 		
-		// writeToDocument(result, readResultsFor);
-		
-//		LuceneIndexManager manager = LuceneIndexManager.getInstance();
-//		Set<WebDocument> indexable = new HashSet<WebDocument>();
-//		for (WebDocument webDocument : result) {
-//			if(manager.findByUrl(webDocument.getUrl()) < 0) 
-//				LOGGER.info("document is indexable :: " + webDocument.getUrl());
-//				indexable.add(webDocument);
-//		}
-//		
-//		if(indexable.size() > 0) {
-//			LuceneIndexGenerator indexer = LuceneIndexGenerator.getInstance();
-//			try {
-//				LOGGER.info(indexable.size() + " documents to be indexed...");
-//				 indexer.index(result, null);
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
-//		} else {
-//			LOGGER.info("Nothing to index...");
-//		}
 		
 		return result;
 	}
