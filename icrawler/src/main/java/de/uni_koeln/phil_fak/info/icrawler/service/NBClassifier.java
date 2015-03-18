@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,11 +16,11 @@ import org.springframework.stereotype.Service;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.NaiveBayes;
+import weka.classifiers.lazy.IBk;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SparseInstance;
-import de.uni_koeln.phil_fak.info.icrawler.core.Constants;
 import de.uni_koeln.phil_fak.info.icrawler.core.Crawler;
 import de.uni_koeln.phil_fak.info.icrawler.core.DocumentType;
 import de.uni_koeln.phil_fak.info.icrawler.core.data.NaiveBayesClassifierInstance;
@@ -55,15 +56,31 @@ public class NBClassifier {
 			this.listWekaAttributes = classifier.getListWekaAttributes();
 			logger.info("Classifier loaded... ");
 		} else {
+			logger.info("Building classifier... ");
 			buildNaiveBayes();
 		}
 	}
 
 	public void buildNaiveBayes() throws Exception {
+		
+		
+		IBk iBk = new IBk();
+		
 		indexManager.calculateTermVectors();
-		listWekaAttributes = createTemplateStructure();
+		
+		// Liste der Attribute/Token muss kürzer werden...
+		Set<String> relevantTokens = getAttributesByThreshold(indexManager.getDocTermMatrix());
+//		logger.info("relevant tokens count " + relevantTokens.size());
+//		listWekaAttributes = createTemplateStructure(relevantTokens);
+		listWekaAttributes = createTemplateStructure(indexManager.getTermVector());
+		
 		// Map<Key( docId ), Value( instance )>
 		Map<Integer, Instance> docIdInstanceMap = new HashMap<Integer, Instance>();
+		
+		
+		Set<String> stopWords = new HashSet<String>(ObjectReader.getStopWords());
+		
+		logger.info("stopWords.size() :: " + stopWords.size());
 		
 		TreeSet<Integer> docVector = indexManager.getDocVector();
 		TreeSet<String> termVector = indexManager.getTermVector();
@@ -84,7 +101,7 @@ public class NBClassifier {
 		Classifier cModel = (Classifier) new NaiveBayes();
 		cModel.buildClassifier(trainingSet);
 		
-		classifier = new NaiveBayesClassifierInstance(cModel, trainingSet, docVector, termVector, docTermMatrix, listWekaAttributes);
+		classifier = new NaiveBayesClassifierInstance(cModel, trainingSet, testSet, docVector, termVector, docTermMatrix, listWekaAttributes);
 		ObjectWriter.saveClassifier(classifier);
 
 //		und dann klassifizieren (Instance für Instance...)	
@@ -107,6 +124,22 @@ public class NBClassifier {
 //		}
 	}
 	
+	private Set<String> getAttributesByThreshold(
+			HashMap<Integer, Map<String, Double>> docTermMatrix) {
+		
+		Set<String> relevant = new HashSet<String>();
+		
+		for (Integer docID : docTermMatrix.keySet()) {
+			Map<String, Double> termTfIdf = docTermMatrix.get(docID);
+			for (String token : termTfIdf.keySet()) {
+				if(termTfIdf.get(token) > 3)
+					relevant.add(token);
+			}
+		}
+		
+		return relevant;
+	}
+
 	public void convertWekaInatance(Map<Integer, Instance> docIdInstanceMap, TreeSet<Integer> docVector) {
 		for (Integer docId : docVector) {
 			// Map<Key( term ), Value( tf/idf )>
@@ -126,6 +159,15 @@ public class NBClassifier {
 	private void convertToInatance(ArrayList<Attribute> listWekaAttributes, Map<Integer, Instance> docIdInstanceMap,
 			TreeSet<Integer> docVector, int max, int count, Instances trainingSet, Instances testSet) {
 		
+		Map<String, Integer>  portions = new HashMap<String, Integer>();
+		int portion = max / topics.size();
+		logger.info(topics.size() + " topics...");
+		logger.info(portion + " documents per topic will be considered...");
+		for (String topic : topics) {
+			portions.put(topic, 0);
+		}
+
+		int y = 0;
 		// docVecs in Instances umwandeln ...
 		for (Integer docId : docVector) {
 			
@@ -145,17 +187,26 @@ public class NBClassifier {
 			String topic = indexManager.getTopic(docId);
 			
 			if (count <= max) {
-				logger.info("docId :: " + docId + ", topic :: " + topic);
-				instance.setDataset(trainingSet);
-				instance.setValue(listWekaAttributes.size() - 1, topic);
-				trainingSet.add(instance);
-			}else{
+				
+				Integer n = portions.get(topic);
+				if(n != portion) {
+					logger.info("docId :: " + docId + ", topic :: " + topic + ", count :: " + count + ", i :: " + y);
+					instance.setDataset(trainingSet);
+					instance.setValue(listWekaAttributes.size() - 1, topic);
+					trainingSet.add(instance);
+					portions.put(topic, n + 1);
+					count++;
+				}
+				
+				
+			} else {
 				instance.setDataset(testSet);
 				// instance.setValue(listWekaAttributes.size() - 1, null);
 				testSet.add(instance);
 			}
 			docIdInstanceMap.put(docId, instance);
-			count++;
+			// count++;
+			y++;
 		}
 	}
 
@@ -163,8 +214,8 @@ public class NBClassifier {
 	 * Struktur/ Template eines Dokumentvektors
 	 * @return
 	 */
-	private ArrayList<Attribute> createTemplateStructure() {
-		List<String> asList = new ArrayList<String>(indexManager.getTermVector());
+	private ArrayList<Attribute> createTemplateStructure(Set<String> attributes) {
+		List<String> asList = new ArrayList<String>(attributes);
 		ArrayList<Attribute> listWekaAttributes = new ArrayList<Attribute>();
 		for (String term : asList) {
 			// Attribute sind alle Terme
@@ -179,8 +230,8 @@ public class NBClassifier {
 		return listWekaAttributes;
 	}
 
-	public void classifyEntry(final String url) throws Exception {
-		Set<WebDocument> documents = Crawler.crawl(Arrays.asList(url), 0, DocumentType.UNKNOWN_DOCUMENT);
+	public void classifyEntry(final String url, DocumentType type) throws Exception {
+		Set<WebDocument> documents = Crawler.crawl(Arrays.asList(url), 0, type, false);
 		for (WebDocument webDocument : documents) {
 			logger.info("document to be classified :: " + webDocument.getUrl());
 		}
@@ -197,13 +248,13 @@ public class NBClassifier {
 			Map<String, Double> docVec = indexManager.calculateSingleTermVector(docID, classifier.getTermVector());
 			Instance instance = convertWekaInatance(docVec);
 			
-			instance.setDataset(classifier.getTrainingSet());
+			instance.setDataset(classifier.getTestSet());
 			
 			double[] distributionForInstance = classifier.getClassifier().distributionForInstance(instance);
 			
 			for (int i = 0; i < distributionForInstance.length; i++) {
-				logger.info("Topic :: " + SPONWebDocumentParser.topicArray[i] + " > " + distributionForInstance[i]);
-			}				
+				logger.info("Topic :: " + SPONWebDocumentParser.topicArray[i] + " > " + (distributionForInstance[i]*100));
+			}
 			
 			//Map<String, Double> termVectorForDocId = indexManager.getTfIdf(docID, DocumentType.UNKNOWN_DOCUMENT);
 //			TreeSet<Integer> docVector = indexManager.getDocVector();
