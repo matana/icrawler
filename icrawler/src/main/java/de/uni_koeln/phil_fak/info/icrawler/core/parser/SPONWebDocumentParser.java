@@ -12,6 +12,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.uni_koeln.phil_fak.info.icrawler.core.Constants;
 import de.uni_koeln.phil_fak.info.icrawler.core.data.WebDocument;
 
 public class SPONWebDocumentParser extends WebDocumentParser {
@@ -19,7 +20,6 @@ public class SPONWebDocumentParser extends WebDocumentParser {
 	private Logger logger = LoggerFactory.getLogger(getClass());
 	private static final String TAB = "\t";
 	private static final String NEW_LINE = "\n";
-	private static final String ROOT_URL = "http://www.spiegel.de/";
 	
 	public static String[] topicArray = {
 			"politik",
@@ -28,7 +28,6 @@ public class SPONWebDocumentParser extends WebDocumentParser {
 			"wirtschaft",
 			"sport",
 			"netzwelt",
-			"karriere",
 			"wissenschaft"
 	};
 	
@@ -97,7 +96,7 @@ public class SPONWebDocumentParser extends WebDocumentParser {
 			if(anchor.isEmpty())
 				return false;
 			String host1 = new URL(anchor).getHost();
-			String host2 = new URL(ROOT_URL).getHost();
+			String host2 = new URL(Constants.SPON_ROOT_URL).getHost();
 			if(host1.equals(host2))
 				return true;
 		} catch (MalformedURLException e) {
