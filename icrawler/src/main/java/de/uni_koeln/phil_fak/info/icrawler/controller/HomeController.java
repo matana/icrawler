@@ -1,6 +1,7 @@
 package de.uni_koeln.phil_fak.info.icrawler.controller;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +28,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import de.uni_koeln.phil_fak.info.icrawler.core.Constants;
+import de.uni_koeln.phil_fak.info.icrawler.core.Crawler;
 import de.uni_koeln.phil_fak.info.icrawler.core.DocumentType;
 import de.uni_koeln.phil_fak.info.icrawler.core.data.RequestData;
 import de.uni_koeln.phil_fak.info.icrawler.core.data.WebDocument;
@@ -71,7 +74,13 @@ public class HomeController {
 	public String classify(@RequestParam("site") String site, HttpServletRequest request, HttpServletResponse response)  {
 		logger.info("Classifying entry from: " + site);
 		try {
-			nbClassifier.classifyEntry(site);
+			String host1 = new URL(site).getHost();
+			String host2 = new URL(Constants.SPON_ROOT_URL).getHost();
+			
+			if(host1.equals(host2))
+				nbClassifier.classifyEntry(site, DocumentType.SPON_DOCUMENT);
+			else
+				nbClassifier.classifyEntry(site, DocumentType.UNKNOWN_DOCUMENT);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -99,10 +108,10 @@ public class HomeController {
 		String url = data.getUrl();
 		DocumentType type = DocumentType.valueOf(data.getType());
 		logger.info("url : " + url + ", type : " + type.name());
-		//		if(type == null)
-		//			Crawler.crawl(toList(url), 1, DocumentType.SPON_DOCUMENT);
-		//		else 
-		//			Crawler.crawl(toList(url), 1, type);
+		if(type == null)
+			Crawler.crawl(toList(url), 1, DocumentType.SPON_DOCUMENT, true);
+		else 
+			Crawler.crawl(toList(url), 1, type, true);
 	}
 
 	@RequestMapping(value = { "/latestResults" }, method = RequestMethod.GET)
