@@ -20,6 +20,7 @@ public interface Constants {
 	public static final String SD_MONEY_URL = "http://www.sueddeutsche.de/geld";
 	public static final String SD_SCIENCE_URL = "http://www.sueddeutsche.de/wissen";
 	
+	public static final String SPON_ROOT_URL = "http://www.spiegel.de/";
 	public static final String SPON_POLITICS_URL = "http://www.spiegel.de/politik/";
 	public static final String SPON_LIFE_URL = "http://www.spiegel.de/panorama/";
 	public static final String SPON_ARTS_URL = "http://www.spiegel.de/kultur/";
@@ -36,7 +37,6 @@ public interface Constants {
 		"wirtschaft",
 		"sport",
 		"netzwelt",
-		"karriere",
 		"wissenschaft"
 	};
 
