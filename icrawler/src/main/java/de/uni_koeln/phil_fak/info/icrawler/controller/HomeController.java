@@ -29,10 +29,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import de.uni_koeln.phil_fak.info.icrawler.core.Constants;
-import de.uni_koeln.phil_fak.info.icrawler.core.Crawler;
 import de.uni_koeln.phil_fak.info.icrawler.core.DocumentType;
 import de.uni_koeln.phil_fak.info.icrawler.core.data.RequestData;
 import de.uni_koeln.phil_fak.info.icrawler.core.data.WebDocument;
+import de.uni_koeln.phil_fak.info.icrawler.service.Crawler;
 import de.uni_koeln.phil_fak.info.icrawler.service.NBClassifier;
 import de.uni_koeln.phil_fak.info.icrawler.service.SearchService;
 import de.uni_koeln.phil_fak.info.icrawler.util.ObjectReader;
@@ -47,6 +47,9 @@ public class HomeController {
 	
 	@Autowired
 	private NBClassifier nbClassifier;
+	
+	@Autowired
+	private Crawler crawler;
 
 	private ModelMap queryResultMap;
 
@@ -77,10 +80,15 @@ public class HomeController {
 			String host1 = new URL(site).getHost();
 			String host2 = new URL(Constants.SPON_ROOT_URL).getHost();
 			
+			Set<WebDocument> documents = null; 
+			
 			if(host1.equals(host2))
-				nbClassifier.classifyEntry(site, DocumentType.SPON_DOCUMENT);
+				documents = Crawler.crawl(Arrays.asList(site), 0, DocumentType.SPON_DOCUMENT, false);
 			else
-				nbClassifier.classifyEntry(site, DocumentType.UNKNOWN_DOCUMENT);
+				documents = Crawler.crawl(Arrays.asList(site), 0, DocumentType.UNKNOWN_DOCUMENT, false);
+			
+			nbClassifier.classifyEntry(site, documents);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

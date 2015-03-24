@@ -21,11 +21,10 @@ import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SparseInstance;
-import de.uni_koeln.phil_fak.info.icrawler.core.Crawler;
+import de.uni_koeln.phil_fak.info.icrawler.core.Constants;
 import de.uni_koeln.phil_fak.info.icrawler.core.DocumentType;
-import de.uni_koeln.phil_fak.info.icrawler.core.data.NaiveBayesClassifierInstance;
+import de.uni_koeln.phil_fak.info.icrawler.core.data.ClassifierInstance;
 import de.uni_koeln.phil_fak.info.icrawler.core.data.WebDocument;
-import de.uni_koeln.phil_fak.info.icrawler.core.parser.SPONWebDocumentParser;
 import de.uni_koeln.phil_fak.info.icrawler.lucene.LuceneIndexGenerator;
 import de.uni_koeln.phil_fak.info.icrawler.lucene.LuceneIndexManager;
 import de.uni_koeln.phil_fak.info.icrawler.util.ObjectReader;
@@ -38,7 +37,7 @@ public class NBClassifier {
 
 	private Logger logger = LoggerFactory.getLogger(getClass());
 	
-	private NaiveBayesClassifierInstance classifier;
+	private ClassifierInstance classifier;
 
 	private ArrayList<String> topics;
 
@@ -50,7 +49,7 @@ public class NBClassifier {
 
 	public NBClassifier() throws Exception {
 		indexManager = LuceneIndexManager.getInstance();
-		NaiveBayesClassifierInstance classifier = ObjectReader.getClassifier();
+		ClassifierInstance classifier = ObjectReader.getClassifier();
 		if(classifier != null) {
 			this.classifier = classifier;
 			this.listWekaAttributes = classifier.getListWekaAttributes();
@@ -101,7 +100,7 @@ public class NBClassifier {
 		Classifier cModel = (Classifier) new NaiveBayes();
 		cModel.buildClassifier(trainingSet);
 		
-		classifier = new NaiveBayesClassifierInstance(cModel, trainingSet, testSet, docVector, termVector, docTermMatrix, listWekaAttributes);
+		classifier = new ClassifierInstance(cModel, trainingSet, testSet, docVector, termVector, docTermMatrix, listWekaAttributes);
 		ObjectWriter.saveClassifier(classifier);
 
 //		und dann klassifizieren (Instance für Instance...)	
@@ -224,14 +223,13 @@ public class NBClassifier {
 		}
 		
 		// Letztes Element ist das 'Klassenattribut' (das Feld für die Klasse/Topic)
-		topics = new ArrayList<String>(Arrays.asList(SPONWebDocumentParser.topicArray));
+		topics = new ArrayList<String>(Arrays.asList(Constants.topicArray));
 		Attribute classAttribute = new Attribute("classAttribute", topics);
 		listWekaAttributes.add(classAttribute);
 		return listWekaAttributes;
 	}
 
-	public void classifyEntry(final String url, DocumentType type) throws Exception {
-		Set<WebDocument> documents = Crawler.crawl(Arrays.asList(url), 0, type, false);
+	public void classifyEntry(final String url, Set<WebDocument> documents) throws Exception {
 		for (WebDocument webDocument : documents) {
 			logger.info("document to be classified :: " + webDocument.getUrl());
 		}
@@ -249,11 +247,10 @@ public class NBClassifier {
 			Instance instance = convertWekaInatance(docVec);
 			
 			instance.setDataset(classifier.getTestSet());
-			
 			double[] distributionForInstance = classifier.getClassifier().distributionForInstance(instance);
 			
 			for (int i = 0; i < distributionForInstance.length; i++) {
-				logger.info("Topic :: " + SPONWebDocumentParser.topicArray[i] + " > " + (distributionForInstance[i]*100));
+				logger.info("Topic :: " + Constants.topicArray[i] + " > " + (distributionForInstance[i]*100));
 			}
 			
 			//Map<String, Double> termVectorForDocId = indexManager.getTfIdf(docID, DocumentType.UNKNOWN_DOCUMENT);
