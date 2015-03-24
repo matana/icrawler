@@ -1,4 +1,4 @@
-package de.uni_koeln.phil_fak.info.icrawler.core;
+package de.uni_koeln.phil_fak.info.icrawler.service;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -13,13 +13,16 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
+import de.uni_koeln.phil_fak.info.icrawler.core.DocumentType;
 import de.uni_koeln.phil_fak.info.icrawler.core.data.WebDocument;
 import de.uni_koeln.phil_fak.info.icrawler.lucene.LuceneIndexGenerator;
 import de.uni_koeln.phil_fak.info.icrawler.lucene.LuceneIndexManager;
 import de.uni_koeln.phil_fak.info.icrawler.util.ObjectReader;
 import de.uni_koeln.phil_fak.info.icrawler.util.ObjectWriter;
 
+@Service
 public class Crawler {
 
 	private static Logger LOGGER = LoggerFactory.getLogger(Crawler.class);

@@ -1,4 +1,4 @@
-package de.uni_koeln.phil_fak.info.icrawler.core;
+package de.uni_koeln.phil_fak.info.icrawler.service;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -11,6 +11,7 @@ import javax.xml.bind.JAXBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.uni_koeln.phil_fak.info.icrawler.core.DocumentType;
 import de.uni_koeln.phil_fak.info.icrawler.core.data.WebDocument;
 import de.uni_koeln.phil_fak.info.icrawler.core.parser.SDWebDocumentParser;
 import de.uni_koeln.phil_fak.info.icrawler.core.parser.SPONWebDocumentParser;
