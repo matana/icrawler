@@ -10,7 +10,7 @@ import weka.classifiers.Classifier;
 import weka.core.Attribute;
 import weka.core.Instances;
 
-public class NaiveBayesClassifierInstance implements Serializable {
+public class ClassifierInstance implements Serializable {
 	
 	/**
 	 * The UID.
@@ -26,7 +26,7 @@ public class NaiveBayesClassifierInstance implements Serializable {
 	private ArrayList<Attribute> listWekaAttributes;
 	
 
-	public NaiveBayesClassifierInstance(Classifier classifier, Instances trainingSet, 
+	public ClassifierInstance(Classifier classifier, Instances trainingSet, 
 			Instances testSet, TreeSet<Integer> docVector, TreeSet<String> termVector, HashMap<Integer, 
 			Map<String, Double>> docTermMatrix, ArrayList<Attribute> listWekaAttributes) {
 		this.setTrainingSet(trainingSet);
