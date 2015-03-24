@@ -8,7 +8,7 @@ import java.io.ObjectOutputStream;
 import java.util.Set;
 
 import weka.classifiers.Classifier;
-import de.uni_koeln.phil_fak.info.icrawler.core.data.NaiveBayesClassifierInstance;
+import de.uni_koeln.phil_fak.info.icrawler.core.data.ClassifierInstance;
 import de.uni_koeln.phil_fak.info.icrawler.core.data.WebDocument;
 import de.uni_koeln.phil_fak.info.icrawler.service.NBClassifier;
 
@@ -18,7 +18,7 @@ public class ObjectWriter {
 	public static final String CLASSIFIER_DIR = "classifier";
 	public static final String SITES_DIR = "sites";
 	
-	public static void saveClassifier(NaiveBayesClassifierInstance classifierInstance) {
+	public static void saveClassifier(ClassifierInstance classifierInstance) {
 
 		File dir = getDir(CLASSIFIER_DIR);
 		try {

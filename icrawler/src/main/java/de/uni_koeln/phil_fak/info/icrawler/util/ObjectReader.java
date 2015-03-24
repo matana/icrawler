@@ -18,7 +18,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.uni_koeln.phil_fak.info.icrawler.core.data.NaiveBayesClassifierInstance;
+import de.uni_koeln.phil_fak.info.icrawler.core.data.ClassifierInstance;
 import de.uni_koeln.phil_fak.info.icrawler.core.data.WebDocument;
 import de.uni_koeln.phil_fak.info.icrawler.util.comparator.FileDateDescComaparator;
 
@@ -34,13 +34,13 @@ public class ObjectReader {
 		logger.info("newSet.size: " + newSet.size());
 	}
 	
-	public static NaiveBayesClassifierInstance getClassifier() {
+	public static ClassifierInstance getClassifier() {
 
-		NaiveBayesClassifierInstance classifierInstance = null;
-		File file = new File(ObjectWriter.CLASSIFIER_DIR, NaiveBayesClassifierInstance.class.getSimpleName().toLowerCase() + ".classifier");
+		ClassifierInstance classifierInstance = null;
+		File file = new File(ObjectWriter.CLASSIFIER_DIR, ClassifierInstance.class.getSimpleName().toLowerCase() + ".classifier");
 		try {
 			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
-			classifierInstance = (NaiveBayesClassifierInstance) ois.readObject();
+			classifierInstance = (ClassifierInstance) ois.readObject();
 			ois.close();
 			return classifierInstance;
 		} catch (FileNotFoundException e) {
